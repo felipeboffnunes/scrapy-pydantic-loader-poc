@@ -6,5 +6,11 @@ NEWSPIDER_MODULE = "quotes_crawler.spiders"
 ROBOTSTXT_OBEY = True
 
 ITEM_PIPELINES = {
-    "quotes_crawler.pipelines.QuotesItemValidationPipeline": 300,
+    "spidermon.contrib.scrapy.pipelines.ItemValidationPipeline": 800
+}
+
+SPIDERMON_ENABLED = True
+
+EXTENSIONS = {
+    'spidermon.contrib.scrapy.extensions.Spidermon': 500,
 }

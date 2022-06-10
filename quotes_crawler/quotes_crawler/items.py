@@ -1,4 +1,7 @@
 from copy import deepcopy
+from pathlib import Path
+
+from pydantic.dataclasses import dataclass
 from typing import List, Dict, Type
 from typing import Optional
 
@@ -25,15 +28,27 @@ class AllOptional(ModelMetaclass):
         namespaces["__annotations__"] = _annotations
         return super().__new__(mcs, name, bases, namespaces, **kwargs)
 
-
+PATH = Path(__file__).parent
 class BaseItem(BaseModel, metaclass=AllOptional):
 
+    @staticmethod
+    def build_spidermon_base_monitor() -> Dict:
+        return {
+            "SPIDERMON_VALIDATION_SCHEMAS": [
+                f"{PATH}/res/quote.json",
+            ]
+        }
+
     class Config:
+        arbitrary_types_allowed = True
         @staticmethod
         def schema_extra(schema: Dict, model: Type['BaseModel']) -> None:
             if issubclass(model, BaseModel):
                 return
             schema = model.schema_json()
+
+
+
 
     # def __new__(cls, *args, **kwargs):
     #     # Change type of all fields to Field()
@@ -43,15 +58,14 @@ class BaseItem(BaseModel, metaclass=AllOptional):
     #         if not field.startswith("__"):
     #             cls.__annotations__[field] = Field()
 
-
 class Tag(BaseItem):
     idx: int
-    tag: str
+    tag_: str
 
 
 class Quote(BaseItem):
     idx_: str
-    quote: str
+    quote: int
     author: str
     author_url: str
     tags: List[Tag]
@@ -74,9 +88,6 @@ class QuoteLoader(ItemLoader):
     default_output_processor = TakeFirst()
     idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
     tags_out = Identity()
-
-    def load_item(self):
-        return Quote(**super().load_item())
 
 
 print(Quote.schema_json(indent=2))

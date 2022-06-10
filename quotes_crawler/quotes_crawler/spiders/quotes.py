@@ -12,6 +12,8 @@ class QuotesSpider(scrapy.Spider):
     allowed_domains = ["quotes.toscrape.com"]
     start_urls = ["http://quotes.toscrape.com/"]
 
+    custom_settings = Quote.build_spidermon_base_monitor()
+
     def parse(self, response: Response, **kwargs) -> Generator[Request | Quote, None, None]:
         for idx, quote in enumerate(response.css(".quote")):
             tags = []

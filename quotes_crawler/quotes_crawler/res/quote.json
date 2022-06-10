@@ -1,0 +1,51 @@
+{
+  "title": "Quote",
+  "type": "object",
+  "properties": {
+    "quote": {
+      "title": "Quote",
+      "type": "integer"
+    },
+    "author": {
+      "title": "Author",
+      "type": "string"
+    },
+    "author_url": {
+      "title": "Author Url",
+      "type": "string"
+    },
+    "tags": {
+      "title": "Tags",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Tag"
+      }
+    },
+    "idx": {
+      "title": "Idx",
+      "type": "string"
+    }
+  },
+  "required": [
+    "idx"
+  ],
+  "definitions": {
+    "Tag": {
+      "title": "Tag",
+      "type": "object",
+      "properties": {
+        "idx": {
+          "title": "Idx",
+          "type": "integer"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag"
+      ]
+    }
+  }
+}
