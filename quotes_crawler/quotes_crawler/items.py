@@ -3,9 +3,10 @@ from typing import List, Dict, Type
 from typing import Optional
 
 from itemloaders import ItemLoader
-from itemloaders.processors import TakeFirst, Compose
+from itemloaders.processors import TakeFirst, Compose, MapCompose, Identity
 from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
+from scrapy import Field
 
 
 class AllOptional(ModelMetaclass):
@@ -27,10 +28,6 @@ class AllOptional(ModelMetaclass):
 
 class BaseItem(BaseModel, metaclass=AllOptional):
 
-    def __new__(cls):
-        cls.schematic = BaseModel
-        return cls
-
     class Config:
         @staticmethod
         def schema_extra(schema: Dict, model: Type['BaseModel']) -> None:
@@ -38,8 +35,16 @@ class BaseItem(BaseModel, metaclass=AllOptional):
                 return
             schema = model.schema_json()
 
+    # def __new__(cls, *args, **kwargs):
+    #     # Change type of all fields to Field()
+    #     # This is needed because otherwise the fields are not loaded
+    #     # correctly by ItemLoader
+    #     for field in cls.__annotations__:
+    #         if not field.startswith("__"):
+    #             cls.__annotations__[field] = Field()
 
-class Tag(BaseModel):
+
+class Tag(BaseItem):
     idx: int
     tag: str
 
@@ -66,7 +71,12 @@ class Quote(BaseItem):
 
 
 class QuoteLoader(ItemLoader):
+    default_output_processor = TakeFirst()
     idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
+    tags_out = Identity()
+
+    def load_item(self):
+        return Quote(**super().load_item())
 
 
 print(Quote.schema_json(indent=2))

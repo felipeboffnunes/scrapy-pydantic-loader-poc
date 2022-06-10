@@ -18,7 +18,7 @@ class QuotesSpider(scrapy.Spider):
             for tag_idx, tag in enumerate(quote.css(".tag *::text").getall()):
                 tags.append(Tag.construct(**{"idx": tag_idx, "tag": tag}))
 
-            quote_loader = QuoteLoader(item=Quote(), response=response, selector=quote)
+            quote_loader = QuoteLoader(response=response, selector=quote)
             quote_loader.add_css("quote", ".text::text")
             quote_loader.add_css("author", ".author::text")
             quote_loader.add_css("author_url", ".author ~ a::attr(href)")
