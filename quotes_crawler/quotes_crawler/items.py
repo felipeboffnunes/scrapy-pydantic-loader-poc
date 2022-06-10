@@ -1,15 +1,14 @@
 from copy import deepcopy
 from pathlib import Path
-
-from pydantic.dataclasses import dataclass
 from typing import List, Dict, Type
 from typing import Optional
 
 from itemloaders import ItemLoader
-from itemloaders.processors import TakeFirst, Compose, MapCompose, Identity
-from pydantic import BaseModel
+from itemloaders.processors import TakeFirst, Compose, MapCompose
+from pydantic import BaseModel, validator
 from pydantic.main import ModelMetaclass
-from scrapy import Field
+
+PATH = Path(__file__).parent
 
 
 class AllOptional(ModelMetaclass):
@@ -28,7 +27,7 @@ class AllOptional(ModelMetaclass):
         namespaces["__annotations__"] = _annotations
         return super().__new__(mcs, name, bases, namespaces, **kwargs)
 
-PATH = Path(__file__).parent
+
 class BaseItem(BaseModel, metaclass=AllOptional):
 
     @staticmethod
@@ -41,6 +40,7 @@ class BaseItem(BaseModel, metaclass=AllOptional):
 
     class Config:
         arbitrary_types_allowed = True
+
         @staticmethod
         def schema_extra(schema: Dict, model: Type['BaseModel']) -> None:
             if issubclass(model, BaseModel):
@@ -48,17 +48,8 @@ class BaseItem(BaseModel, metaclass=AllOptional):
             schema = model.schema_json()
 
 
-
-
-    # def __new__(cls, *args, **kwargs):
-    #     # Change type of all fields to Field()
-    #     # This is needed because otherwise the fields are not loaded
-    #     # correctly by ItemLoader
-    #     for field in cls.__annotations__:
-    #         if not field.startswith("__"):
-    #             cls.__annotations__[field] = Field()
-
 class Tag(BaseItem):
+    idx: int
     tag: str
 
 
@@ -68,7 +59,6 @@ class Quote(BaseItem):
     author: str
     author_url: str
     tags: List[Tag]
-
 
     # @validator("author")
     # def author_must_start_with_a(cls, value):
@@ -83,10 +73,17 @@ class Quote(BaseItem):
     #     return value
 
 
+class MapComposeIdGenerator(MapCompose):
+
+    def __call__(self, value, loader_context=None):
+        values = [(idx, value_) for idx, value_ in enumerate(value)]
+        return super().__call__(values, loader_context)
+
+
 class QuoteLoader(ItemLoader):
     default_output_processor = TakeFirst()
     idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
-    tags_out = MapCompose(lambda x: Tag(idx=0, tag=x))
+    tags_out = MapComposeIdGenerator(lambda x: Tag(idx=x[0], tag=x[1]))
 
 
 print(Quote.schema_json(indent=2))

@@ -4,7 +4,7 @@ import scrapy
 from scrapy import Request
 from scrapy.http import Response
 
-from quotes_crawler.items import Quote, Tag, QuoteLoader
+from quotes_crawler.items import Quote, QuoteLoader
 
 
 class QuotesSpider(scrapy.Spider):
@@ -16,10 +16,6 @@ class QuotesSpider(scrapy.Spider):
 
     def parse(self, response: Response, **kwargs) -> Generator[Request | Quote, None, None]:
         for idx, quote in enumerate(response.css(".quote")):
-            # tags = []
-            # for tag_idx, tag in enumerate(quote.css(".tag *::text").getall()):
-            #     tags.append(Tag.construct(**{"idx": tag_idx, "tag": tag}))
-
             quote_loader = QuoteLoader(response=response, selector=quote)
             quote_loader.add_css("quote", ".text::text")
             quote_loader.add_css("author", ".author::text")
