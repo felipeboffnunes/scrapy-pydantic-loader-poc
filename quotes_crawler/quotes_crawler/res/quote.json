@@ -4,7 +4,7 @@
   "properties": {
     "quote": {
       "title": "Quote",
-      "type": "integer"
+      "type": "string"
     },
     "author": {
       "title": "Author",

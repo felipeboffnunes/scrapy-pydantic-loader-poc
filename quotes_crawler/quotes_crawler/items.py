@@ -55,22 +55,10 @@ class Tag(BaseItem):
 
 class Quote(BaseItem):
     idx_: str
-    quote: int
+    quote: str
     author: str
     author_url: str
     tags: List[Tag]
-
-    # @validator("author")
-    # def author_must_start_with_a(cls, value):
-    #     if not value.startswith("A") and not value.startswith("a"):
-    #         raise ValueError("must starts with 'A' letter")
-    #     return value
-    #
-    # @validator("tags")
-    # def only_two_tags_allowed(cls, value):
-    #     if len(value) > 2:
-    #         raise ValueError("only two tags allowed")
-    #     return value
 
 
 class MapComposeIdGenerator(MapCompose):
@@ -82,8 +70,9 @@ class MapComposeIdGenerator(MapCompose):
 
 class QuoteLoader(ItemLoader):
     default_output_processor = TakeFirst()
-    idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
+    idx_out = Compose(int)
     tags_out = MapComposeIdGenerator(lambda x: Tag(idx=x[0], tag=x[1]))
+
 
 try:
     with open(f"{PATH}/res/quote.json", "w") as f:
