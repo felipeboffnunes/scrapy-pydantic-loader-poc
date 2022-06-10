@@ -1,6 +1,10 @@
+from typing import Generator
+
 import scrapy
-import random
-from quotes_crawler.items import Quote, Tag
+from scrapy import Request
+from scrapy.http import Response
+
+from quotes_crawler.items import Quote, Tag, QuoteLoader
 
 
 class QuotesSpider(scrapy.Spider):
@@ -8,20 +12,20 @@ class QuotesSpider(scrapy.Spider):
     allowed_domains = ["quotes.toscrape.com"]
     start_urls = ["http://quotes.toscrape.com/"]
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs) -> Generator[Request | Quote, None, None]:
         for idx, quote in enumerate(response.css(".quote")):
             tags = []
             for tag_idx, tag in enumerate(quote.css(".tag *::text").getall()):
                 tags.append(Tag.construct(**{"idx": tag_idx, "tag": tag}))
 
-            item = Quote.construct(
-                quote=quote.css(".text::text").get(),
-                author=quote.css(".author::text").get(),
-                author_url=response.urljoin(quote.css(".author a::attr(href)").get()),
-                tags=tags,
-                idx=idx,
-            )
-            yield item.dict()
+            quote_loader = QuoteLoader(item=Quote(), response=response, selector=quote)
+            quote_loader.add_css("quote", ".text::text")
+            quote_loader.add_css("author", ".author::text")
+            quote_loader.add_css("author_url", ".author ~ a::attr(href)")
+            quote_loader.add_value("tags", tags)
+            quote_loader.add_value("idx", idx)
+            item = quote_loader.load_item()
+            yield item
 
         yield scrapy.Request(
             response.urljoin(response.css(".next a::attr(href)").get())
