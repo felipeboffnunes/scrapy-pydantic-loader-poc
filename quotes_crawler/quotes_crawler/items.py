@@ -59,8 +59,7 @@ class BaseItem(BaseModel, metaclass=AllOptional):
     #             cls.__annotations__[field] = Field()
 
 class Tag(BaseItem):
-    idx: int
-    tag_: str
+    tag: str
 
 
 class Quote(BaseItem):
@@ -87,7 +86,7 @@ class Quote(BaseItem):
 class QuoteLoader(ItemLoader):
     default_output_processor = TakeFirst()
     idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
-    tags_out = Identity()
+    tags_out = MapCompose(lambda x: Tag(idx=0, tag=x))
 
 
 print(Quote.schema_json(indent=2))
