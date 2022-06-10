@@ -34,17 +34,17 @@
       "title": "Tag",
       "type": "object",
       "properties": {
-        "idx": {
-          "title": "Idx",
-          "type": "integer"
-        },
         "tag": {
           "title": "Tag",
           "type": "string"
+        },
+        "idx": {
+          "title": "Idx",
+          "type": "integer"
         }
       },
       "required": [
-        "tag"
+        "idx"
       ]
     }
   }

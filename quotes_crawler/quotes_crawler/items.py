@@ -5,7 +5,7 @@ from typing import Optional
 
 from itemloaders import ItemLoader
 from itemloaders.processors import TakeFirst, Compose, MapCompose
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
 
 PATH = Path(__file__).parent
@@ -49,7 +49,7 @@ class BaseItem(BaseModel, metaclass=AllOptional):
 
 
 class Tag(BaseItem):
-    idx: int
+    idx_: int
     tag: str
 
 
@@ -85,5 +85,8 @@ class QuoteLoader(ItemLoader):
     idx_out = Compose(TakeFirst(), lambda x: "Tony Works")
     tags_out = MapComposeIdGenerator(lambda x: Tag(idx=x[0], tag=x[1]))
 
-
-print(Quote.schema_json(indent=2))
+try:
+    with open(f"{PATH}/res/quote.json", "w") as f:
+        f.write(Quote.schema_json(indent=2))
+except Exception as e:
+    print(e)
